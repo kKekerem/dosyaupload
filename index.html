@@ -2,6 +2,13 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
+  <!-- Google OAuth için gerekli Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="
+    script-src 'self' 'unsafe-inline' https://apis.google.com https://accounts.google.com https://www.gstatic.com;
+    frame-src https://accounts.google.com https://*.googleusercontent.com;
+    style-src 'self' 'unsafe-inline';
+    connect-src https://www.googleapis.com https://accounts.google.com;
+  ">
   <title>Google Drive Dosya Yükleme</title>
   <script src="https://apis.google.com/js/api.js"></script>
 </head>
@@ -18,8 +25,7 @@
   <div id="file-list"></div>
 
   <script>
-    // Google API client yapılandırma bilgileri
-    const CLIENT_ID = '623121601943-t5i3a29u6j75b14647fqqvaiva8iahur.apps.googleusercontent.com'; // Buraya kendi Client ID'n
+    const CLIENT_ID = '623121601943-t5i3a29u6j75b14647fqqvaiva8iahur.apps.googleusercontent.com'; // Kendi Client ID'n
     const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata.readonly';
 
     let GoogleAuth;
