@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dosya Yükle ve Listele - Responsive, İndir Butonu ve Oynatıcı</title>
+<title>Dosya Yükle ve Listele</title>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -46,7 +46,6 @@
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
   }
 
-  /* --- Burası çok önemli: dosyaların grid düzeni --- */
   #files {
     display: flex;
     flex-wrap: wrap;
@@ -65,7 +64,6 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    /* max genişlik ve responsive genişlik */
     max-width: 320px;
     width: 100%;
     box-sizing: border-box;
@@ -84,7 +82,6 @@
     text-align: center;
   }
 
-  /* İndir butonu kutu içinde sağ alt köşede */
   .download-btn {
     position: absolute;
     bottom: 8px;
@@ -111,7 +108,6 @@
     margin: 0 auto;
   }
 
-  /* Soru işareti dosya kutusu */
   .unknown-file {
     font-size: 72px;
     color: #888;
@@ -136,7 +132,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIFLgbsGqM_maKCpQQmicFTk7zRPnT0Zvxvqv1muydtNyAOnuPB-xXhdxd7tkzxpPbcw/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHqcHaX5kECFhR3QZvTJ8OHHNWSBJraGmxQJPVOGSU5qyYvSFATgRoWSRlacdrUsk7zA/exec';
 
   function upload() {
     const fileInput = document.getElementById('fileInput');
@@ -180,6 +176,11 @@
     reader.readAsDataURL(file);
   }
 
+  // Drive dosya linkini direkt indirme linkine çevirir
+  function getDirectDownloadUrl(file) {
+    return `https://drive.google.com/uc?export=download&id=${file.id}`;
+  }
+
   function loadFiles() {
     const script = document.createElement('script');
     script.src = SCRIPT_URL + '?callback=handleFiles&cacheBust=' + Date.now();
@@ -194,13 +195,14 @@
       const box = document.createElement('div');
       box.className = 'file-box';
 
+      const directUrl = getDirectDownloadUrl(file);
+
       if (file.type.startsWith('image/')) {
         const img = document.createElement('img');
-        img.src = file.url;
+        img.src = directUrl;
         img.alt = file.name;
 
         img.onload = () => {
-          // Çözünürlük oranıyla boyut ayarla (max 300px genişlik)
           let w = img.naturalWidth;
           let h = img.naturalHeight;
           const maxWidth = 300;
@@ -218,7 +220,7 @@
         const video = document.createElement('video');
         video.controls = true;
         video.preload = 'metadata';
-        video.src = file.url;
+        video.src = directUrl;
 
         video.onloadedmetadata = () => {
           let w = video.videoWidth;
@@ -237,32 +239,31 @@
       } else if (file.type.startsWith('audio/')) {
         const audio = document.createElement('audio');
         audio.controls = true;
-        audio.src = file.url;
+        audio.src = directUrl;
         audio.style.width = '100%';
 
         box.appendChild(audio);
 
       } else {
-        // Diğer dosyalar soru işareti simgesi ile
         const unknown = document.createElement('div');
         unknown.className = 'unknown-file';
         unknown.textContent = '?';
         box.appendChild(unknown);
       }
 
-      // Dosya adı
       const nameDiv = document.createElement('div');
       nameDiv.className = 'file-name';
       nameDiv.textContent = file.name;
       box.appendChild(nameDiv);
 
-      // İndir butonu
       const downloadBtn = document.createElement('a');
       downloadBtn.className = 'download-btn';
-      downloadBtn.href = file.url;
+      downloadBtn.href = directUrl;
       downloadBtn.download = file.name;
       downloadBtn.textContent = 'İndir';
       downloadBtn.title = 'Dosyayı indir';
+      downloadBtn.target = "_blank";
+
       box.appendChild(downloadBtn);
 
       container.appendChild(box);
