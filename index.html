@@ -2,17 +2,27 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Google Drive API - Yeni Kimlik Doğrulama</title>
+  <title>Google Drive Dosya Yükleme</title>
+
+  <!-- Google API ve Google Identity Services -->
   <script src="https://apis.google.com/js/api.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #file-list div { margin-bottom: 10px; }
+    button { margin: 5px; padding: 10px 15px; }
+  </style>
 </head>
 <body>
-  <h1>Google Drive Dosya Yükleme - Yeni Kimlik Doğrulama</h1>
+  <h1>Google Drive - Dosya Yükleme</h1>
 
   <div id="g_id_signin"></div>
+  <button id="auth_button">Google ile Giriş Yap</button>
   <button id="signout_button" style="display:none;">Çıkış Yap</button>
 
-  <br/><br/>
+  <hr />
+
   <input type="file" id="file-input" />
   <button id="upload-button" disabled>Yükle</button>
 
@@ -25,45 +35,39 @@
     let tokenClient;
     let accessToken = null;
 
-    // Google API yüklendiğinde init et
-    function gapiLoaded() {
-      gapi.load('client', initializeGapiClient);
-    }
-
-    async function initializeGapiClient() {
-      await gapi.client.init({
-        apiKey: '', // API Key is optional here if you use OAuth
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+    // Yüklendiğinde Google API'yi başlat
+    window.onload = () => {
+      gapi.load('client', async () => {
+        await gapi.client.init({
+          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+        });
+        document.getElementById('auth_button').onclick = handleAuthClick;
+        document.getElementById('signout_button').onclick = signOut;
+        document.getElementById('upload-button').onclick = uploadFile;
       });
-      document.getElementById('upload-button').disabled = true;
-    }
 
-    // Google Identity Services OAuth Client oluştur
-    function gisLoaded() {
       tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: SCOPES,
-        callback: '', // callback işlemi daha sonra handleAuthResponse ile yapılacak
+        callback: (resp) => {
+          if (resp.error !== undefined) {
+            alert('Hata: ' + resp.error);
+            return;
+          }
+          accessToken = resp.access_token;
+          gapi.client.setToken({ access_token: accessToken });
+          document.getElementById('auth_button').style.display = 'none';
+          document.getElementById('signout_button').style.display = 'inline-block';
+          document.getElementById('upload-button').disabled = false;
+          listFiles();
+        }
       });
-    }
+    };
 
     function handleAuthClick() {
-      tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-          throw (resp);
-        }
-        accessToken = resp.access_token;
-        gapi.client.setToken({ access_token: accessToken });
-        document.getElementById('signout_button').style.display = 'inline-block';
-        document.getElementById('upload-button').disabled = false;
-        listFiles();
-      };
-
-      if (accessToken === null) {
-        // İlk kez token isteniyor
+      if (!accessToken) {
         tokenClient.requestAccessToken({ prompt: 'consent' });
       } else {
-        // Token varsa refresh
         tokenClient.requestAccessToken({ prompt: '' });
       }
     }
@@ -72,6 +76,7 @@
       accessToken = null;
       gapi.client.setToken(null);
       document.getElementById('signout_button').style.display = 'none';
+      document.getElementById('auth_button').style.display = 'inline-block';
       document.getElementById('upload-button').disabled = true;
       document.getElementById('file-list').innerHTML = '';
     }
@@ -79,102 +84,68 @@
     async function uploadFile() {
       const fileInput = document.getElementById('file-input');
       const file = fileInput.files[0];
-      if (!file) {
-        alert('Lütfen bir dosya seçin!');
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Dosya boyutu 5MB\'ı geçemez!');
-        return;
-      }
+      if (!file) return alert('Lütfen bir dosya seçin.');
+      if (file.size > 5 * 1024 * 1024) return alert('Dosya en fazla 5MB olabilir.');
 
-      const metadata = {
-        name: file.name,
-        mimeType: file.type
-      };
-
+      const metadata = { name: file.name, mimeType: file.type };
       const form = new FormData();
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
       form.append('file', file);
 
       try {
-        const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
           method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + accessToken
-          },
+          headers: { Authorization: 'Bearer ' + accessToken },
           body: form
         });
-        const data = await response.json();
-        alert('Dosya yüklendi, dosya ID: ' + data.id);
+        const data = await res.json();
+        alert('Yüklendi. Dosya ID: ' + data.id);
         listFiles();
-      } catch (error) {
-        alert('Yükleme hatası: ' + error.message);
+      } catch (err) {
+        alert('Yükleme hatası: ' + err.message);
       }
     }
 
     async function listFiles() {
-      if (!accessToken) return;
-
-      const response = await gapi.client.drive.files.list({
-        pageSize: 10,
-        fields: "files(id, name, mimeType)"
-      });
-
-      const files = response.result.files;
-      let listHtml = '<h3>Yüklenen Dosyalar</h3>';
-      if (files && files.length > 0) {
-        files.forEach(file => {
-          listHtml += `<div style="margin-bottom:8px;">
-              <strong>${file.name}</strong> (${file.mimeType}) 
-              <button onclick="downloadFile('${file.id}', '${file.name}')">İndir</button>
-            </div>`;
+      try {
+        const response = await gapi.client.drive.files.list({
+          pageSize: 10,
+          fields: "files(id, name, mimeType)"
         });
-      } else {
-        listHtml += '<p>Dosya yok</p>';
+        const files = response.result.files;
+        let html = '<h3>Yüklenen Dosyalar</h3>';
+        if (!files || files.length === 0) {
+          html += '<p>Dosya yok</p>';
+        } else {
+          files.forEach(file => {
+            html += `
+              <div>
+                📄 <strong>${file.name}</strong> (${file.mimeType})
+                <button onclick="downloadFile('${file.id}', '${file.name}')">İndir</button>
+              </div>`;
+          });
+        }
+        document.getElementById('file-list').innerHTML = html;
+      } catch (err) {
+        alert('Listeleme hatası: ' + err.message);
       }
-      document.getElementById('file-list').innerHTML = listHtml;
     }
 
     async function downloadFile(fileId, fileName) {
       try {
         const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-          headers: { 'Authorization': 'Bearer ' + accessToken }
+          headers: { Authorization: 'Bearer ' + accessToken }
         });
-        if (!response.ok) throw new Error('İndirme başarısız');
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = fileName || 'dosya';
-        document.body.appendChild(a);
+        a.download = fileName;
         a.click();
-        a.remove();
       } catch (err) {
-        alert(err.message);
+        alert('İndirme hatası: ' + err.message);
       }
     }
-
-    // Butonları bağla
-    window.onload = () => {
-      document.getElementById('upload-button').onclick = uploadFile;
-      document.getElementById('signout_button').onclick = signOut;
-      gapiLoaded();
-      gisLoaded();
-
-      // Google Sign-in butonu otomatik olarak buraya geliyor
-      google.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        callback: (response) => {
-          // Bu yeni sign-in ile kullanıcı bilgisi alabilirsin (ID token)
-          console.log('Signed in:', response);
-        }
-      });
-      google.accounts.id.renderButton(
-        document.getElementById('g_id_signin'),
-        { theme: 'outline', size: 'large' }
-      );
-    };
   </script>
 </body>
 </html>
