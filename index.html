@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dosya Yükleme ve Listeleme</title>
+<title>Dosya Yükleme & Önizleme</title>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -43,221 +43,231 @@
   button:hover {
     background: linear-gradient(45deg, #4a90e2, #b8e1ff);
     color: #fff;
-    box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
   }
-
-  #files {
+  input[type=file] {
+    margin-top: 10px;
+    display: block;
+  }
+  #files-container {
+    margin-top: 20px;
     display: flex;
     flex-wrap: wrap;
-    gap: 16px;
-    justify-content: flex-start;
+    gap: 15px;
+    justify-content: center;
   }
-
-  .file-box {
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.12);
-    background: white;
+  .file-card {
+    background: #fafafa;
+    border-radius: 10px;
     padding: 10px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: default;
+    width: 280px;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-    max-width: 320px;
-    width: 100%;
-    box-sizing: border-box;
+    transition: transform 0.25s ease;
   }
-  .file-box:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 25px rgb(0 0 0 / 0.2);
+  .file-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 0.15);
   }
   .file-name {
     margin-top: 10px;
-    font-size: 14px;
     font-weight: 600;
-    color: #555;
-    word-break: break-word;
-    user-select: text;
+    color: #333;
     text-align: center;
+    word-break: break-word;
   }
-
-  .download-btn {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: #4a90e2;
-    color: white;
-    border: none;
+  .media-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  img.preview-img {
+    max-width: 100%;
     border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    opacity: 0.85;
-    transition: opacity 0.3s ease;
+  }
+  video, audio {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .unknown-file {
+    font-size: 60px;
+    color: #bbb;
+    user-select: none;
+  }
+  .download-btn {
+    margin-top: 10px;
+    background: #36a;
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 16px;
     text-decoration: none;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    transition: background-color 0.3s ease;
   }
   .download-btn:hover {
-    opacity: 1;
-  }
-
-  img, video, audio {
-    border-radius: 8px;
-    max-width: 100%;
-    display: block;
-    margin: 0 auto;
-  }
-
-  .unknown-file {
-    font-size: 72px;
-    color: #888;
-    user-select: none;
-    margin: 20px 0 10px;
+    background: #258;
   }
 </style>
 </head>
 <body>
-<h1>Dosya Yükle ve Listele</h1>
+  <h1>Dosya Yükle ve Önizle</h1>
 
-<div id="upload-section">
-  <input type="file" id="fileInput" />
-  <br /><br />
-  <button onclick="upload()">Yükle</button>
-  <div id="status"></div>
-</div>
+  <section id="upload-section">
+    <input type="file" id="file-input" />
+    <button id="upload-btn" disabled>Yükle</button>
+    <p id="status-msg"></p>
+  </section>
 
-<div id="files-section">
-  <h2>Yüklenen Dosyalar</h2>
-  <div id="files"></div>
-</div>
+  <section id="files-section">
+    <h2>Yüklenen Dosyalar</h2>
+    <div id="files-container"></div>
+  </section>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVC-dTc403vvV4bpEyr3ggOg1Ii6cZient_3wNs0kWMVptz4_cvXyWGYnWi3rKAY2L5g/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvKfwu4c54FCe88UKlZYRMM0UnECiBbyi8u__OidZNwA7aaPw0EOnEJQhgePcUYD2l8w/exec';
 
-  function upload() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    const status = document.getElementById('status');
+  const fileInput = document.getElementById('file-input');
+  const uploadBtn = document.getElementById('upload-btn');
+  const statusMsg = document.getElementById('status-msg');
+  const filesContainer = document.getElementById('files-container');
 
-    if (!file) {
-      status.textContent = "⚠️ Dosya seçin.";
+  let selectedFile = null;
+
+  fileInput.addEventListener('change', () => {
+    selectedFile = fileInput.files[0];
+    uploadBtn.disabled = !selectedFile;
+    statusMsg.textContent = '';
+  });
+
+  uploadBtn.addEventListener('click', () => {
+    if (!selectedFile) return;
+
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      alert('Dosya boyutu 5MB\'ı geçemez.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      status.textContent = "⚠️ Maksimum dosya boyutu 5MB.";
-      return;
-    }
-
-    status.textContent = "Yükleniyor...";
 
     const reader = new FileReader();
-    reader.onload = function () {
-      const base64Data = reader.result.split(',')[1];
+    reader.onload = function(e) {
+      const base64Data = e.target.result.split(',')[1]; // base64 kısmı
+
+      statusMsg.textContent = 'Yükleniyor... Lütfen bekleyin.';
+      uploadBtn.disabled = true;
+
       const formData = new FormData();
-      formData.append('filename', file.name);
-      formData.append('mimetype', file.type);
+      formData.append('filename', selectedFile.name);
+      formData.append('mimetype', selectedFile.type);
       formData.append('data', base64Data);
 
-      fetch(SCRIPT_URL, { method: 'POST', body: formData })
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === "success") {
-            status.textContent = "✅ " + data.message;
-            fileInput.value = ''; // seçimi temizle
-            loadFiles();
-          } else {
-            status.textContent = "❌ " + data.message;
-          }
-        })
-        .catch(err => {
-          status.textContent = "❌ Yükleme hatası: " + err.message;
-        });
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          filename: selectedFile.name,
+          mimetype: selectedFile.type,
+          data: base64Data
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          statusMsg.textContent = 'Dosya yüklendi!';
+          loadFiles();
+        } else {
+          statusMsg.textContent = 'Hata: ' + data.message;
+        }
+        uploadBtn.disabled = false;
+        fileInput.value = null;
+        selectedFile = null;
+      })
+      .catch(err => {
+        statusMsg.textContent = 'Yükleme sırasında hata oluştu.';
+        uploadBtn.disabled = false;
+        console.error(err);
+      });
     };
-    reader.readAsDataURL(file);
-  }
+    reader.readAsDataURL(selectedFile);
+  });
 
   function loadFiles() {
+    // Eski JSONP script'i kaldır
+    const oldScript = document.getElementById('jsonpScript');
+    if (oldScript) oldScript.remove();
+
     const script = document.createElement('script');
     script.src = SCRIPT_URL + '?callback=handleFiles&cacheBust=' + Date.now();
+    script.id = 'jsonpScript';
     document.body.appendChild(script);
   }
 
-  function handleFiles(data) {
-    const container = document.getElementById('files');
-    container.innerHTML = '';
+  function handleFiles(files) {
+    filesContainer.innerHTML = '';
 
-    data.forEach(file => {
-      const box = document.createElement('div');
-      box.className = 'file-box';
+    if (!files || files.length === 0) {
+      filesContainer.innerHTML = '<p>Henüz dosya yok.</p>';
+      return;
+    }
 
+    files.forEach(file => {
+      const card = document.createElement('div');
+      card.className = 'file-card';
+
+      // Medya önizlemesi için wrapper
+      const mediaWrapper = document.createElement('div');
+      mediaWrapper.className = 'media-wrapper';
+
+      // Dosya tipi kontrolü ve uygun önizleme
       if (file.type.startsWith('image/')) {
         const img = document.createElement('img');
         img.src = file.url;
         img.alt = file.name;
-        img.onload = () => {
-          let w = img.naturalWidth;
-          let h = img.naturalHeight;
-          const maxWidth = 300;
-          if (w > maxWidth) {
-            h = h * (maxWidth / w);
-            w = maxWidth;
-          }
-          img.style.width = w + 'px';
-          img.style.height = h + 'px';
-        };
-        box.appendChild(img);
+        img.className = 'preview-img';
+        mediaWrapper.appendChild(img);
 
       } else if (file.type.startsWith('video/')) {
         const video = document.createElement('video');
         video.controls = true;
-        video.preload = 'metadata';
         video.src = file.url;
-        video.onloadedmetadata = () => {
-          let w = video.videoWidth;
-          let h = video.videoHeight;
-          const maxWidth = 300;
-          if (w > maxWidth) {
-            h = h * (maxWidth / w);
-            w = maxWidth;
-          }
-          video.style.width = w + 'px';
-          video.style.height = h + 'px';
-        };
-        box.appendChild(video);
+        video.width = 280;
+        mediaWrapper.appendChild(video);
 
       } else if (file.type.startsWith('audio/')) {
         const audio = document.createElement('audio');
         audio.controls = true;
         audio.src = file.url;
-        audio.style.width = '100%';
-        box.appendChild(audio);
+        mediaWrapper.appendChild(audio);
 
       } else {
+        // Bilinmeyen dosya tipi için simge
         const unknown = document.createElement('div');
         unknown.className = 'unknown-file';
         unknown.textContent = '?';
-        box.appendChild(unknown);
+        mediaWrapper.appendChild(unknown);
       }
 
-      const nameDiv = document.createElement('div');
-      nameDiv.className = 'file-name';
-      nameDiv.textContent = file.name;
-      box.appendChild(nameDiv);
+      card.appendChild(mediaWrapper);
 
-      const downloadBtn = document.createElement('a');
-      downloadBtn.className = 'download-btn';
-      downloadBtn.href = 'https://drive.google.com/uc?export=download&id=' + file.id;
-      downloadBtn.download = file.name;
-      downloadBtn.textContent = 'İndir';
-      downloadBtn.title = 'Dosyayı indir';
-      downloadBtn.target = "_blank";
-      box.appendChild(downloadBtn);
+      const fileNameDiv = document.createElement('div');
+      fileNameDiv.className = 'file-name';
+      fileNameDiv.textContent = file.name;
+      card.appendChild(fileNameDiv);
 
-      container.appendChild(box);
+      // İndir butonu
+      const downloadLink = document.createElement('a');
+      downloadLink.className = 'download-btn';
+      downloadLink.href = file.url;
+      downloadLink.download = file.name;
+      downloadLink.textContent = 'İndir';
+      card.appendChild(downloadLink);
+
+      filesContainer.appendChild(card);
     });
   }
 
-  loadFiles();
+  // Sayfa yüklenince dosyaları getir
+  window.onload = loadFiles;
 </script>
 </body>
 </html>
