@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dosya Yükle ve Listele - Dinamik Çözünürlük & Animasyon</title>
+<title>Dosya Yükle ve Listele - Responsive, İndir Butonu ve Oynatıcı</title>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 900px;
+    max-width: 960px;
     margin: 30px auto;
     background: #eef2f7;
     padding: 20px;
@@ -45,16 +45,30 @@
     color: #fff;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
   }
+
+  /* --- Burası çok önemli: dosyaların grid düzeni --- */
+  #files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-start;
+  }
+
   .file-box {
     border-radius: 12px;
     box-shadow: 0 3px 10px rgb(0 0 0 / 0.12);
     background: white;
-    margin: 12px;
     padding: 10px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-    display: inline-block;
-    vertical-align: top;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    /* max genişlik ve responsive genişlik */
+    max-width: 320px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .file-box:hover {
     transform: translateY(-6px);
@@ -67,6 +81,42 @@
     color: #555;
     word-break: break-word;
     user-select: text;
+    text-align: center;
+  }
+
+  /* İndir butonu kutu içinde sağ alt köşede */
+  .download-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+    text-decoration: none;
+  }
+  .download-btn:hover {
+    opacity: 1;
+  }
+
+  img, video, audio {
+    border-radius: 8px;
+    max-width: 100%;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Soru işareti dosya kutusu */
+  .unknown-file {
+    font-size: 72px;
+    color: #888;
+    user-select: none;
+    margin: 20px 0 10px;
   }
 </style>
 </head>
@@ -75,7 +125,7 @@
 
 <div id="upload-section">
   <input type="file" id="fileInput" />
-  <br />
+  <br /><br />
   <button onclick="upload()">Yükle</button>
   <div id="status"></div>
 </div>
@@ -117,6 +167,7 @@
         .then(data => {
           if (data.status === "success") {
             status.textContent = "✅ " + data.message;
+            fileInput.value = ''; // seçimi temizle
             loadFiles();
           } else {
             status.textContent = "❌ " + data.message;
@@ -131,7 +182,7 @@
 
   function loadFiles() {
     const script = document.createElement('script');
-    script.src = SCRIPT_URL + '?callback=handleFiles';
+    script.src = SCRIPT_URL + '?callback=handleFiles&cacheBust=' + Date.now();
     document.body.appendChild(script);
   }
 
@@ -142,18 +193,14 @@
     data.forEach(file => {
       const box = document.createElement('div');
       box.className = 'file-box';
-      box.style.width = 'fit-content';
 
       if (file.type.startsWith('image/')) {
         const img = document.createElement('img');
         img.src = file.url;
         img.alt = file.name;
-        img.style.borderRadius = '8px';
-        img.style.display = 'block';
-        img.style.margin = 'auto';
-        img.style.maxWidth = '100%';
 
         img.onload = () => {
+          // Çözünürlük oranıyla boyut ayarla (max 300px genişlik)
           let w = img.naturalWidth;
           let h = img.naturalHeight;
           const maxWidth = 300;
@@ -163,25 +210,15 @@
           }
           img.style.width = w + 'px';
           img.style.height = h + 'px';
-
-          box.style.width = (w + 20) + 'px';
-          box.style.height = (h + 60) + 'px';
         };
 
         box.appendChild(img);
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'file-name';
-        nameDiv.textContent = file.name;
-        box.appendChild(nameDiv);
 
       } else if (file.type.startsWith('video/')) {
         const video = document.createElement('video');
         video.controls = true;
         video.preload = 'metadata';
         video.src = file.url;
-        video.style.borderRadius = '8px';
-        video.style.display = 'block';
-        video.style.margin = 'auto';
 
         video.onloadedmetadata = () => {
           let w = video.videoWidth;
@@ -193,51 +230,40 @@
           }
           video.style.width = w + 'px';
           video.style.height = h + 'px';
-
-          box.style.width = (w + 20) + 'px';
-          box.style.height = (h + 60) + 'px';
         };
 
         box.appendChild(video);
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'file-name';
-        nameDiv.textContent = file.name;
-        box.appendChild(nameDiv);
 
       } else if (file.type.startsWith('audio/')) {
-        box.style.width = '320px';
-        box.style.height = '60px';
-        box.style.padding = '10px';
-
         const audio = document.createElement('audio');
         audio.controls = true;
         audio.src = file.url;
         audio.style.width = '100%';
-        audio.style.borderRadius = '8px';
 
         box.appendChild(audio);
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'file-name';
-        nameDiv.textContent = file.name;
-        box.appendChild(nameDiv);
 
       } else {
-        box.style.width = '120px';
-        box.style.height = '120px';
-        box.style.fontSize = '72px';
-        box.style.display = 'flex';
-        box.style.justifyContent = 'center';
-        box.style.alignItems = 'center';
-        box.style.flexDirection = 'column';
-        box.style.color = '#666';
-
-        box.innerHTML = `<div style="user-select:none;">?</div>`;
-
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'file-name';
-        nameDiv.textContent = file.name;
-        box.appendChild(nameDiv);
+        // Diğer dosyalar soru işareti simgesi ile
+        const unknown = document.createElement('div');
+        unknown.className = 'unknown-file';
+        unknown.textContent = '?';
+        box.appendChild(unknown);
       }
+
+      // Dosya adı
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'file-name';
+      nameDiv.textContent = file.name;
+      box.appendChild(nameDiv);
+
+      // İndir butonu
+      const downloadBtn = document.createElement('a');
+      downloadBtn.className = 'download-btn';
+      downloadBtn.href = file.url;
+      downloadBtn.download = file.name;
+      downloadBtn.textContent = 'İndir';
+      downloadBtn.title = 'Dosyayı indir';
+      box.appendChild(downloadBtn);
 
       container.appendChild(box);
     });
