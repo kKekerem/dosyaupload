@@ -1,147 +1,249 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dosya Yükle ve Listele</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 20px auto;
-      background: #f4f4f4;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-    }
-    #upload-section, #files-section {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      margin-top: 20px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    button {
-      background: #1976d2;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .file-box {
-      border: 1px solid #ccc;
-      background: #fff;
-      border-radius: 8px;
-      padding: 10px;
-      margin: 10px;
-      width: 180px;
-      display: inline-block;
-      vertical-align: top;
-      text-align: center;
-    }
-    .file-box img, .file-box video, .file-box audio {
-      width: 100%;
-      border-radius: 5px;
-    }
-    .file-name {
-      margin-top: 8px;
-      font-size: 14px;
-      word-break: break-word;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dosya Yükle ve Listele - Dinamik Çözünürlük & Animasyon</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 900px;
+    margin: 30px auto;
+    background: #eef2f7;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+    user-select: none;
+  }
+  #upload-section, #files-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 25px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+  #upload-section:hover, #files-section:hover {
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+  }
+  button {
+    background: linear-gradient(45deg, #3f87a6, #ebf8e1);
+    border: none;
+    color: #2f4f4f;
+    padding: 12px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 3px 8px rgb(0 0 0 / 0.2);
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    background: linear-gradient(45deg, #4a90e2, #b8e1ff);
+    color: #fff;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  }
+  .file-box {
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.12);
+    background: white;
+    margin: 12px;
+    padding: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .file-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgb(0 0 0 / 0.2);
+  }
+  .file-name {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    word-break: break-word;
+    user-select: text;
+  }
+</style>
 </head>
 <body>
-  <h1>Dosya Yükle ve Görüntüle</h1>
+<h1>Dosya Yükle ve Listele</h1>
 
-  <div id="upload-section">
-    <input type="file" id="fileInput" />
-    <br />
-    <button onclick="upload()">Yükle</button>
-    <div id="status"></div>
-  </div>
+<div id="upload-section">
+  <input type="file" id="fileInput" />
+  <br />
+  <button onclick="upload()">Yükle</button>
+  <div id="status"></div>
+</div>
 
-  <div id="files-section">
-    <h2>Yüklenen Dosyalar</h2>
-    <div id="files"></div>
-  </div>
+<div id="files-section">
+  <h2>Yüklenen Dosyalar</h2>
+  <div id="files"></div>
+</div>
 
-  <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIFLgbsGqM_maKCpQQmicFTk7zRPnT0Zvxvqv1muydtNyAOnuPB-xXhdxd7tkzxpPbcw/exec';
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIFLgbsGqM_maKCpQQmicFTk7zRPnT0Zvxvqv1muydtNyAOnuPB-xXhdxd7tkzxpPbcw/exec';
 
-    function upload() {
-      const fileInput = document.getElementById('fileInput');
-      const file = fileInput.files[0];
-      const status = document.getElementById('status');
+  function upload() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    const status = document.getElementById('status');
 
-      if (!file) {
-        status.textContent = "⚠️ Dosya seçin.";
-        return;
+    if (!file) {
+      status.textContent = "⚠️ Dosya seçin.";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      status.textContent = "⚠️ Maksimum dosya boyutu 5MB.";
+      return;
+    }
+
+    status.textContent = "Yükleniyor...";
+
+    const reader = new FileReader();
+    reader.onload = function () {
+      const base64Data = reader.result.split(',')[1];
+      const formData = new FormData();
+      formData.append('filename', file.name);
+      formData.append('mimetype', file.type);
+      formData.append('data', base64Data);
+
+      fetch(SCRIPT_URL, { method: 'POST', body: formData })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            status.textContent = "✅ " + data.message;
+            loadFiles();
+          } else {
+            status.textContent = "❌ " + data.message;
+          }
+        })
+        .catch(err => {
+          status.textContent = "❌ Yükleme hatası: " + err.message;
+        });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function loadFiles() {
+    const script = document.createElement('script');
+    script.src = SCRIPT_URL + '?callback=handleFiles';
+    document.body.appendChild(script);
+  }
+
+  function handleFiles(data) {
+    const container = document.getElementById('files');
+    container.innerHTML = '';
+
+    data.forEach(file => {
+      const box = document.createElement('div');
+      box.className = 'file-box';
+      box.style.width = 'fit-content';
+
+      if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = file.url;
+        img.alt = file.name;
+        img.style.borderRadius = '8px';
+        img.style.display = 'block';
+        img.style.margin = 'auto';
+        img.style.maxWidth = '100%';
+
+        img.onload = () => {
+          let w = img.naturalWidth;
+          let h = img.naturalHeight;
+          const maxWidth = 300;
+          if (w > maxWidth) {
+            h = h * (maxWidth / w);
+            w = maxWidth;
+          }
+          img.style.width = w + 'px';
+          img.style.height = h + 'px';
+
+          box.style.width = (w + 20) + 'px';
+          box.style.height = (h + 60) + 'px';
+        };
+
+        box.appendChild(img);
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'file-name';
+        nameDiv.textContent = file.name;
+        box.appendChild(nameDiv);
+
+      } else if (file.type.startsWith('video/')) {
+        const video = document.createElement('video');
+        video.controls = true;
+        video.preload = 'metadata';
+        video.src = file.url;
+        video.style.borderRadius = '8px';
+        video.style.display = 'block';
+        video.style.margin = 'auto';
+
+        video.onloadedmetadata = () => {
+          let w = video.videoWidth;
+          let h = video.videoHeight;
+          const maxWidth = 300;
+          if (w > maxWidth) {
+            h = h * (maxWidth / w);
+            w = maxWidth;
+          }
+          video.style.width = w + 'px';
+          video.style.height = h + 'px';
+
+          box.style.width = (w + 20) + 'px';
+          box.style.height = (h + 60) + 'px';
+        };
+
+        box.appendChild(video);
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'file-name';
+        nameDiv.textContent = file.name;
+        box.appendChild(nameDiv);
+
+      } else if (file.type.startsWith('audio/')) {
+        box.style.width = '320px';
+        box.style.height = '60px';
+        box.style.padding = '10px';
+
+        const audio = document.createElement('audio');
+        audio.controls = true;
+        audio.src = file.url;
+        audio.style.width = '100%';
+        audio.style.borderRadius = '8px';
+
+        box.appendChild(audio);
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'file-name';
+        nameDiv.textContent = file.name;
+        box.appendChild(nameDiv);
+
+      } else {
+        box.style.width = '120px';
+        box.style.height = '120px';
+        box.style.fontSize = '72px';
+        box.style.display = 'flex';
+        box.style.justifyContent = 'center';
+        box.style.alignItems = 'center';
+        box.style.flexDirection = 'column';
+        box.style.color = '#666';
+
+        box.innerHTML = `<div style="user-select:none;">?</div>`;
+
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'file-name';
+        nameDiv.textContent = file.name;
+        box.appendChild(nameDiv);
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        status.textContent = "⚠️ Maksimum dosya boyutu 5MB.";
-        return;
-      }
+      container.appendChild(box);
+    });
+  }
 
-      status.textContent = "Yükleniyor...";
-
-      const reader = new FileReader();
-      reader.onload = function() {
-        const base64Data = reader.result.split(',')[1];
-        const formData = new FormData();
-        formData.append('filename', file.name);
-        formData.append('mimetype', file.type);
-        formData.append('data', base64Data);
-
-        fetch(SCRIPT_URL, { method: 'POST', body: formData })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === "success") {
-              status.textContent = "✅ " + data.message;
-              loadFiles();
-            } else {
-              status.textContent = "❌ " + data.message;
-            }
-          })
-          .catch(err => {
-            status.textContent = "❌ Yükleme hatası: " + err.message;
-          });
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function loadFiles() {
-      // JSONP ile çağrı
-      const script = document.createElement('script');
-      script.src = SCRIPT_URL + '?callback=handleFiles';
-      document.body.appendChild(script);
-    }
-
-    function handleFiles(data) {
-      const container = document.getElementById('files');
-      container.innerHTML = '';
-
-      data.forEach(file => {
-        const box = document.createElement('div');
-        box.className = 'file-box';
-
-        if (file.type.startsWith('image/')) {
-          box.innerHTML = `<img src="${file.url}" alt="${file.name}" /><div class="file-name">${file.name}</div>`;
-        } else if (file.type.startsWith('video/')) {
-          box.innerHTML = `<video controls src="${file.url}"></video><div class="file-name">${file.name}</div>`;
-        } else if (file.type.startsWith('audio/')) {
-          box.innerHTML = `<audio controls src="${file.url}"></audio><div class="file-name">${file.name}</div>`;
-        } else {
-          box.innerHTML = `📄 <div class="file-name"><a href="${file.url}" target="_blank">${file.name}</a></div>`;
-        }
-
-        container.appendChild(box);
-      });
-    }
-
-    loadFiles();
-  </script>
+  loadFiles();
+</script>
 </body>
 </html>
