@@ -1,64 +1,54 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>Dosya Yükle ve Görüntüle</title>
+  <meta charset="UTF-8" />
+  <title>Dosya Yükle ve Listele</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       max-width: 800px;
-      margin: auto;
+      margin: 20px auto;
       background: #f4f4f4;
+      padding: 20px;
     }
-
     h1 {
       text-align: center;
-      color: #333;
     }
-
     #upload-section, #files-section {
       background: white;
       padding: 20px;
-      margin-top: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
-
     button {
-      padding: 10px 20px;
       background: #1976d2;
-      color: white;
       border: none;
+      color: white;
+      padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
       margin-top: 10px;
     }
-
-    #status {
-      margin-top: 10px;
-    }
-
     .file-box {
       border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 8px;
       padding: 10px;
       margin: 10px;
-      border-radius: 8px;
-      background: #fff;
-      display: inline-block;
       width: 180px;
+      display: inline-block;
       vertical-align: top;
+      text-align: center;
     }
-
-    .file-box video, .file-box audio, .file-box img {
+    .file-box img, .file-box video, .file-box audio {
       width: 100%;
       border-radius: 5px;
     }
-
     .file-name {
+      margin-top: 8px;
       font-size: 14px;
-      word-break: break-all;
-      margin-top: 5px;
+      word-break: break-word;
     }
   </style>
 </head>
@@ -78,54 +68,73 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPjJdBu0_acIAY0y8nlpcCDyUp6uRSDCWDs_1vaZZcgSvPPbLkeox6zXLbluKUw8zDpQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIFLgbsGqM_maKCpQQmicFTk7zRPnT0Zvxvqv1muydtNyAOnuPB-xXhdxd7tkzxpPbcw/exec';
 
-    async function upload() {
+    function upload() {
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       const status = document.getElementById('status');
-      if (!file) return status.innerText = "⚠️ Dosya seçin.";
 
-      status.innerText = "Yükleniyor...";
+      if (!file) {
+        status.textContent = "⚠️ Dosya seçin.";
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        status.textContent = "⚠️ Maksimum dosya boyutu 5MB.";
+        return;
+      }
+
+      status.textContent = "Yükleniyor...";
 
       const reader = new FileReader();
-      reader.onload = async function () {
+      reader.onload = function() {
         const base64Data = reader.result.split(',')[1];
-        const form = new FormData();
-        form.append('filename', file.name);
-        form.append('mimetype', file.type);
-        form.append('data', base64Data);
+        const formData = new FormData();
+        formData.append('filename', file.name);
+        formData.append('mimetype', file.type);
+        formData.append('data', base64Data);
 
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: form
-        });
-
-        status.innerText = "✅ Yüklendi";
-        loadFiles();
+        fetch(SCRIPT_URL, { method: 'POST', body: formData })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === "success") {
+              status.textContent = "✅ " + data.message;
+              loadFiles();
+            } else {
+              status.textContent = "❌ " + data.message;
+            }
+          })
+          .catch(err => {
+            status.textContent = "❌ Yükleme hatası: " + err.message;
+          });
       };
-
       reader.readAsDataURL(file);
     }
 
-    async function loadFiles() {
-      const res = await fetch(SCRIPT_URL);
-      const files = await res.json();
+    function loadFiles() {
+      // JSONP ile çağrı
+      const script = document.createElement('script');
+      script.src = SCRIPT_URL + '?callback=handleFiles';
+      document.body.appendChild(script);
+    }
+
+    function handleFiles(data) {
       const container = document.getElementById('files');
       container.innerHTML = '';
 
-      files.forEach(file => {
+      data.forEach(file => {
         const box = document.createElement('div');
         box.className = 'file-box';
 
         if (file.type.startsWith('image/')) {
-          box.innerHTML = `<img src="https://drive.google.com/uc?id=${file.id}" /><div class="file-name">${file.name}</div>`;
+          box.innerHTML = `<img src="${file.url}" alt="${file.name}" /><div class="file-name">${file.name}</div>`;
         } else if (file.type.startsWith('video/')) {
-          box.innerHTML = `<video controls src="https://drive.google.com/uc?id=${file.id}"></video><div class="file-name">${file.name}</div>`;
+          box.innerHTML = `<video controls src="${file.url}"></video><div class="file-name">${file.name}</div>`;
         } else if (file.type.startsWith('audio/')) {
-          box.innerHTML = `<audio controls src="https://drive.google.com/uc?id=${file.id}"></audio><div class="file-name">${file.name}</div>`;
+          box.innerHTML = `<audio controls src="${file.url}"></audio><div class="file-name">${file.name}</div>`;
         } else {
-          box.innerHTML = `📄 <div class="file-name"><a href="https://drive.google.com/uc?id=${file.id}" target="_blank">${file.name}</a></div>`;
+          box.innerHTML = `📄 <div class="file-name"><a href="${file.url}" target="_blank">${file.name}</a></div>`;
         }
 
         container.appendChild(box);
