@@ -163,7 +163,7 @@
 
   uploadBtn.addEventListener('click', () => {
     if (!selectedFile) return;
-    if (selectedFile.size > 5 * 1024 * 1024) {
+    if (selectedFile.size > 50 * 1024 * 1024) {
       statusDiv.textContent = 'Dosya boyutu 5MBı geçemez.';
       return;
     }
