@@ -1,116 +1,120 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dosya Yükleme & Önizleme</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 960px;
-    margin: 30px auto;
-    background: #eef2f7;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    color: #333;
-    user-select: none;
-  }
-  #upload-section, #files-section {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 25px;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-    transition: box-shadow 0.3s ease;
-  }
-  #upload-section:hover, #files-section:hover {
-    box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
-  }
-  button {
-    background: linear-gradient(45deg, #3f87a6, #ebf8e1);
-    border: none;
-    color: #2f4f4f;
-    padding: 12px 28px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 15px;
-    box-shadow: 0 3px 8px rgb(0 0 0 / 0.2);
-    transition: all 0.3s ease;
-  }
-  button:hover {
-    background: linear-gradient(45deg, #4a90e2, #b8e1ff);
-    color: #fff;
-    box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
-  }
-  input[type=file] {
-    margin-top: 10px;
-    display: block;
-  }
-  #files-container {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-  }
-  .file-card {
-    background: #fafafa;
-    border-radius: 10px;
-    padding: 10px;
-    width: 280px;
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.25s ease;
-  }
-  .file-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 18px rgb(0 0 0 / 0.15);
-  }
-  .file-name {
-    margin-top: 10px;
-    font-weight: 600;
-    color: #333;
-    text-align: center;
-    word-break: break-word;
-  }
-  .media-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  img.preview-img {
-    max-width: 100%;
-    border-radius: 8px;
-  }
-  video, audio {
-    max-width: 100%;
-    border-radius: 8px;
-  }
-  .unknown-file {
-    font-size: 60px;
-    color: #bbb;
-    user-select: none;
-  }
-  .download-btn {
-    margin-top: 10px;
-    background: #36a;
-    color: #fff;
-    border-radius: 8px;
-    padding: 8px 16px;
-    text-decoration: none;
-    font-weight: 600;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
-    transition: background-color 0.3s ease;
-  }
-  .download-btn:hover {
-    background: #258;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dosya Yükleme & Önizleme</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 960px;
+      margin: 30px auto;
+      background: #eef2f7;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      user-select: none;
+    }
+    #upload-section, #files-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    #upload-section:hover, #files-section:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    button {
+      background: linear-gradient(45deg, #3f87a6, #ebf8e1);
+      border: none;
+      color: #2f4f4f;
+      padding: 12px 28px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: linear-gradient(45deg, #4a90e2, #b8e1ff);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    input[type="file"] {
+      display: block;
+      margin-top: 10px;
+    }
+    #files-container {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+    .file-card {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 10px;
+      width: 280px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .file-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    .file-name {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #333;
+      text-align: center;
+      word-break: break-word;
+    }
+    .media-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    img.preview-img, video, audio {
+      max-width: 100%;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto;
+    }
+    .unknown-file {
+      font-size: 60px;
+      color: #bbb;
+      user-select: none;
+      margin: 20px 0 10px;
+    }
+    .download-btn {
+      margin-top: 10px;
+      background: #36a;
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 16px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease;
+    }
+    .download-btn:hover {
+      background: #258;
+    }
+    #status-msg {
+      margin-top: 8px;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
   <h1>Dosya Yükle ve Önizle</h1>
@@ -126,148 +130,126 @@
     <div id="files-container"></div>
   </section>
 
-<script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvKfwu4c54FCe88UKlZYRMM0UnECiBbyi8u__OidZNwA7aaPw0EOnEJQhgePcUYD2l8w/exec';
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwnO5Vauyw806ozIr7Chu8Urmxe2qJDadCmMwHDkUsGDPkrUAeQFVrZEY0NiD0-E3g9w/exec';
 
-  const fileInput = document.getElementById('file-input');
-  const uploadBtn = document.getElementById('upload-btn');
-  const statusMsg = document.getElementById('status-msg');
-  const filesContainer = document.getElementById('files-container');
+    const fileInput   = document.getElementById('file-input');
+    const uploadBtn   = document.getElementById('upload-btn');
+    const statusMsg   = document.getElementById('status-msg');
+    const filesContainer = document.getElementById('files-container');
+    let selectedFile = null;
 
-  let selectedFile = null;
-
-  fileInput.addEventListener('change', () => {
-    selectedFile = fileInput.files[0];
-    uploadBtn.disabled = !selectedFile;
-    statusMsg.textContent = '';
-  });
-
-  uploadBtn.addEventListener('click', () => {
-    if (!selectedFile) return;
-
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      alert('Dosya boyutu 5MB\'ı geçemez.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const base64Data = e.target.result.split(',')[1]; // base64 kısmı
-
-      statusMsg.textContent = 'Yükleniyor... Lütfen bekleyin.';
-      uploadBtn.disabled = true;
-
-      const formData = new FormData();
-      formData.append('filename', selectedFile.name);
-      formData.append('mimetype', selectedFile.type);
-      formData.append('data', base64Data);
-
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: new URLSearchParams({
-          filename: selectedFile.name,
-          mimetype: selectedFile.type,
-          data: base64Data
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          statusMsg.textContent = 'Dosya yüklendi!';
-          loadFiles();
-        } else {
-          statusMsg.textContent = 'Hata: ' + data.message;
-        }
-        uploadBtn.disabled = false;
-        fileInput.value = null;
-        selectedFile = null;
-      })
-      .catch(err => {
-        statusMsg.textContent = 'Yükleme sırasında hata oluştu.';
-        uploadBtn.disabled = false;
-        console.error(err);
-      });
-    };
-    reader.readAsDataURL(selectedFile);
-  });
-
-  function loadFiles() {
-    // Eski JSONP script'i kaldır
-    const oldScript = document.getElementById('jsonpScript');
-    if (oldScript) oldScript.remove();
-
-    const script = document.createElement('script');
-    script.src = SCRIPT_URL + '?callback=handleFiles&cacheBust=' + Date.now();
-    script.id = 'jsonpScript';
-    document.body.appendChild(script);
-  }
-
-  function handleFiles(files) {
-    filesContainer.innerHTML = '';
-
-    if (!files || files.length === 0) {
-      filesContainer.innerHTML = '<p>Henüz dosya yok.</p>';
-      return;
-    }
-
-    files.forEach(file => {
-      const card = document.createElement('div');
-      card.className = 'file-card';
-
-      // Medya önizlemesi için wrapper
-      const mediaWrapper = document.createElement('div');
-      mediaWrapper.className = 'media-wrapper';
-
-      // Dosya tipi kontrolü ve uygun önizleme
-      if (file.type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = file.url;
-        img.alt = file.name;
-        img.className = 'preview-img';
-        mediaWrapper.appendChild(img);
-
-      } else if (file.type.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.controls = true;
-        video.src = file.url;
-        video.width = 280;
-        mediaWrapper.appendChild(video);
-
-      } else if (file.type.startsWith('audio/')) {
-        const audio = document.createElement('audio');
-        audio.controls = true;
-        audio.src = file.url;
-        mediaWrapper.appendChild(audio);
-
-      } else {
-        // Bilinmeyen dosya tipi için simge
-        const unknown = document.createElement('div');
-        unknown.className = 'unknown-file';
-        unknown.textContent = '?';
-        mediaWrapper.appendChild(unknown);
-      }
-
-      card.appendChild(mediaWrapper);
-
-      const fileNameDiv = document.createElement('div');
-      fileNameDiv.className = 'file-name';
-      fileNameDiv.textContent = file.name;
-      card.appendChild(fileNameDiv);
-
-      // İndir butonu
-      const downloadLink = document.createElement('a');
-      downloadLink.className = 'download-btn';
-      downloadLink.href = file.url;
-      downloadLink.download = file.name;
-      downloadLink.textContent = 'İndir';
-      card.appendChild(downloadLink);
-
-      filesContainer.appendChild(card);
+    fileInput.addEventListener('change', () => {
+      selectedFile = fileInput.files[0];
+      uploadBtn.disabled = !selectedFile;
+      statusMsg.textContent = '';
     });
-  }
 
-  // Sayfa yüklenince dosyaları getir
-  window.onload = loadFiles;
-</script>
+    uploadBtn.addEventListener('click', () => {
+      if (!selectedFile) return;
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        statusMsg.textContent = '⚠️ Maksimum dosya boyutu 5MB.';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const base64Data = e.target.result.split(',')[1];
+        statusMsg.textContent = 'Yükleniyor...';
+        uploadBtn.disabled = true;
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: new URLSearchParams({
+            filename: selectedFile.name,
+            mimetype: selectedFile.type,
+            data: base64Data
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          statusMsg.textContent = data.status === 'success' ? '✅ ' + data.message : '❌ ' + data.message;
+          selectedFile = null;
+          fileInput.value = null;
+          uploadBtn.disabled = true;
+          loadFiles();
+        })
+        .catch(err => {
+          statusMsg.textContent = 'Yükleme hatası.';
+          console.error(err);
+          uploadBtn.disabled = false;
+        });
+      };
+      reader.readAsDataURL(selectedFile);
+    });
+
+    function loadFiles() {
+      // Eski JSONP script'ini temizle
+      const old = document.getElementById('jsonpScript');
+      if (old) old.remove();
+      // Yeni JSONP script
+      const script = document.createElement('script');
+      script.id = 'jsonpScript';
+      script.src = SCRIPT_URL + '?callback=handleFiles&cacheBust=' + Date.now();
+      document.body.appendChild(script);
+    }
+
+    function handleFiles(files) {
+      filesContainer.innerHTML = '';
+      if (!files || files.length === 0) {
+        filesContainer.innerHTML = '<p>Henüz dosya yok.</p>';
+        return;
+      }
+      files.forEach(file => {
+        const card = document.createElement('div');
+        card.className = 'file-card';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'media-wrapper';
+
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.className = 'preview-img';
+          img.src = file.embedUrl;
+          img.alt = file.name;
+          wrapper.appendChild(img);
+
+        } else if (file.type.startsWith('video/')) {
+          const vid = document.createElement('video');
+          vid.controls = true;
+          vid.src = file.embedUrl;
+          wrapper.appendChild(vid);
+
+        } else if (file.type.startsWith('audio/')) {
+          const aud = document.createElement('audio');
+          aud.controls = true;
+          aud.src = file.embedUrl;
+          wrapper.appendChild(aud);
+
+        } else {
+          const unk = document.createElement('div');
+          unk.className = 'unknown-file';
+          unk.textContent = '?';
+          wrapper.appendChild(unk);
+        }
+
+        card.appendChild(wrapper);
+
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'file-name';
+        nameDiv.textContent = file.name;
+        card.appendChild(nameDiv);
+
+        const dl = document.createElement('a');
+        dl.className = 'download-btn';
+        dl.href = file.downloadUrl;
+        dl.download = file.name;
+        dl.textContent = 'İndir';
+        card.appendChild(dl);
+
+        filesContainer.appendChild(card);
+      });
+    }
+
+    window.onload = loadFiles;
+  </script>
 </body>
 </html>
