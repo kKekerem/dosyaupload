@@ -193,62 +193,72 @@
     }
 
     function handleFiles(files) {
-      filesContainer.innerHTML = '';
-      if (!files || files.length === 0) {
-        filesContainer.innerHTML = '<p>Henüz dosya yok.</p>';
-        return;
-      }
-      files.forEach(file => {
-        const card = document.createElement('div');
-        card.className = 'file-card';
+  filesContainer.innerHTML = '';
+  if (!files || files.length === 0) {
+    filesContainer.innerHTML = '<p>Henüz dosya yok.</p>';
+    return;
+  }
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'media-wrapper';
+  files.forEach(file => {
+    const card = document.createElement('div');
+    card.className = 'file-card';
 
-        if (file.type.startsWith('image/')) {
-          const img = document.createElement('img');
-          img.className = 'preview-img';
-          img.src = file.embedUrl;
-          img.alt = file.name;
-          wrapper.appendChild(img);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'media-wrapper';
 
-        } else if (file.type.startsWith('video/')) {
-          const vid = document.createElement('video');
-          vid.controls = true;
-          vid.src = file.embedUrl;
-          wrapper.appendChild(vid);
+    // 🎨 Dosya türüne göre önizleme ekle
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.className = 'preview-img';
+      img.src = file.embedUrl;
+      img.alt = file.name;
+      wrapper.appendChild(img);
 
-        } else if (file.type.startsWith('audio/')) {
-          const aud = document.createElement('audio');
-          aud.controls = true;
-          aud.src = file.embedUrl;
-          wrapper.appendChild(aud);
+    } else if (file.type.startsWith('video/')) {
+      const iframe = document.createElement('iframe');
+      iframe.src = file.previewUrl;
+      iframe.width = "100%";
+      iframe.height = "240";
+      iframe.allow = "autoplay; encrypted-media";
+      iframe.loading = "lazy";
+      iframe.frameBorder = "0";
+      wrapper.appendChild(iframe);
 
-        } else {
-          const unk = document.createElement('div');
-          unk.className = 'unknown-file';
-          unk.textContent = '?';
-          wrapper.appendChild(unk);
-        }
+    } else if (file.type.startsWith('audio/')) {
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = file.embedUrl;
+      wrapper.appendChild(audio);
 
-        card.appendChild(wrapper);
-
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'file-name';
-        nameDiv.textContent = file.name;
-        card.appendChild(nameDiv);
-
-        const dl = document.createElement('a');
-        dl.className = 'download-btn';
-        dl.href = file.downloadUrl;
-        dl.download = file.name;
-        dl.textContent = 'İndir';
-        card.appendChild(dl);
-
-        filesContainer.appendChild(card);
-      });
+    } else {
+      const iframe = document.createElement('iframe');
+      iframe.src = file.previewUrl;
+      iframe.width = "100%";
+      iframe.height = "120";
+      iframe.frameBorder = "0";
+      iframe.loading = "lazy";
+      wrapper.appendChild(iframe);
     }
 
+    card.appendChild(wrapper);
+
+    // 📄 Dosya adı
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'file-name';
+    nameDiv.textContent = file.name;
+    card.appendChild(nameDiv);
+
+    // 📥 İndirme butonu
+    const dl = document.createElement('a');
+    dl.className = 'download-btn';
+    dl.href = file.downloadUrl;
+    dl.download = file.name;
+    dl.textContent = 'İndir';
+    card.appendChild(dl);
+
+    filesContainer.appendChild(card);
+  });
+}
     window.onload = loadFiles;
   </script>
 </body>
